@@ -50,3 +50,7 @@ Customized message from the command line
 
 ## What can not be changed at runtime with the same executable?
 You can not enable the `prod` profile since it involves changing the beans of the application context, and the registered beans have been pre-computed Ahead-Of-Time in the generated source file `build/generated/aotSources/com/example/DemoProfileAotApplication__BeanFactoryRegistrations.java`.
+
+## What is Spring team plan to make that more flexible?
+
+See https://github.com/spring-projects/spring-framework/issues/29844.
