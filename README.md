@@ -40,25 +40,25 @@ With Gradle, it is possible to do that with for example:
 With Maven, you can for example define a Maven profile that will enable the Spring Boot one with:
 ```xml
 <profiles>
-		<profile>
-			<id>prod</id>
-			<build>
-				<pluginManagement>
-					<plugins>
-						<plugin>
-							<groupId>org.springframework.boot</groupId>
-							<artifactId>spring-boot-maven-plugin</artifactId>
-							<configuration>
-								<profiles>
-									<profile>prod</profile>
-								</profiles>
-							</configuration>
-						</plugin>
-					</plugins>
-				</pluginManagement>
-			</build>
-		</profile>
-	</profiles>
+	<profile>
+		<id>prod</id>
+		<build>
+			<pluginManagement>
+				<plugins>
+					<plugin>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-maven-plugin</artifactId>
+						<configuration>
+							<profiles>
+								<profile>prod</profile>
+							</profiles>
+						</configuration>
+					</plugin>
+				</plugins>
+			</pluginManagement>
+		</build>
+	</profile>
+</profiles>
 ```
 And when building the native executable or the container image, specify the profile with for example:
 ```
