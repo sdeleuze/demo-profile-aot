@@ -2,20 +2,72 @@
 
 The goal of this repository is to show what can be customized and what can not when using Spring profiles in Ahead-Of-Time transformations and native Spring Boot applications.
 
-## How to compile your native application:
+## How to compile your native application
+With Gradle:
 ```
-$ ./gradlew nativeCompile
+./gradlew nativeCompile
+```
+or with Maven:
+```
+./mvnw -Pnative native:compile
 ```
 
-## How to run
+## How to run your native application
 
-You can run the native application as follows:
+With Gradle, you can run the native application as follows:
 ```
 build/native/nativeCompile/demo-profile-aot
+```
+With Maven:
+```
+target/demo-profile-aot
 ```
 
 Which displays:
 ```
+Default message from application.properties
+```
+
+## How can I use an environment specific Spring profile like the `prod` one?
+
+You should enable those profiles at build time since it involves changing the beans of the application context.
+
+With Gradle, it is possible to do that with for example:
+```
+./gradlew processAot --args='--spring.profiles.active=prod' nativeCompile
+```
+
+With Maven, you can for example define a Maven profile that will enable the Spring Boot one with:
+```xml
+<profiles>
+		<profile>
+			<id>prod</id>
+			<build>
+				<pluginManagement>
+					<plugins>
+						<plugin>
+							<groupId>org.springframework.boot</groupId>
+							<artifactId>spring-boot-maven-plugin</artifactId>
+							<configuration>
+								<profiles>
+									<profile>prod</profile>
+								</profiles>
+							</configuration>
+						</plugin>
+					</plugins>
+				</pluginManagement>
+			</build>
+		</profile>
+	</profiles>
+```
+And when building the native executable or the container image, specify the profile with for example:
+```
+mvn -Pprod,native native:compile
+```
+
+When you compile your native executable like that, you get
+```
+Hello from prod
 Default message from application.properties
 ```
 
@@ -47,10 +99,3 @@ Which displays:
 ```
 Customized message from the command line
 ```
-
-## What can not be changed at runtime with the same executable?
-You can not enable the `prod` profile since it involves changing the beans of the application context, and the registered beans have been pre-computed Ahead-Of-Time in the generated source file `build/generated/aotSources/com/example/DemoProfileAotApplication__BeanFactoryRegistrations.java`.
-
-## What is Spring team plan to make that more flexible?
-
-See https://github.com/spring-projects/spring-framework/issues/29844.
