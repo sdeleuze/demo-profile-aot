@@ -15,6 +15,7 @@
 	<description>Demo project for Spring profiles with AOT optimizations</description>
 	<properties>
 		<java.version>17</java.version>
+		<aot.profiles>default</aot.profiles>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -44,18 +45,21 @@
 
 	<profiles>
 		<profile>
-			<id>prod</id>
+			<id>native</id>
 			<build>
 				<pluginManagement>
 					<plugins>
 						<plugin>
 							<groupId>org.springframework.boot</groupId>
 							<artifactId>spring-boot-maven-plugin</artifactId>
-							<configuration>
-								<profiles>
-									<profile>prod</profile>
-								</profiles>
-							</configuration>
+							<executions>
+								<execution>
+									<id>process-aot</id>
+									<configuration>
+										<profiles>${aot.profiles}</profiles>
+									</configuration>
+								</execution>
+							</executions>
 						</plugin>
 					</plugins>
 				</pluginManagement>

@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.aot.ProcessAot
+
 plugins {
 	java
 	id("org.springframework.boot") version "3.0.5"
@@ -16,6 +18,10 @@ repositories {
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+}
+
+tasks.withType<ProcessAot> {
+    args("--spring.profiles.active=" + (project.properties["aotProfiles"] ?: "default"))
 }
 
 tasks.withType<Test> {

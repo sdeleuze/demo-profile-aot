@@ -1,71 +1,100 @@
 ## Purpose
 
-The goal of this repository is to show what can be customized and what can not when using Spring profiles in Ahead-Of-Time transformations and native Spring Boot applications.
+The goal of this repository is to showcase how Spring profiles can be used with AOT.
+It provides both a Gradle and a Maven-based build.
 
-## How to compile your native application
-With Gradle:
+## Building to a native image
+
+There are several ways to build a native image, check [the reference guide](https://docs.spring.io/spring-boot/docs/current/reference/html/native-image.html#native-image.developing-your-first-application) for more details.
+
+To build with GraalVM and Gradle:
 ```
 ./gradlew nativeCompile
 ```
-or with Maven:
+
+or Maven:
 ```
 ./mvnw -Pnative native:compile
 ```
 
-## How to run your native application
+## Running the application
 
 With Gradle, you can run the native application as follows:
 ```
 build/native/nativeCompile/demo-profile-aot
 ```
+
 With Maven:
 ```
 target/demo-profile-aot
 ```
 
-Which displays:
+Running this sample app displays the following:
 ```
 Default message from application.properties
 ```
 
-## How can I use an environment specific Spring profile like the `prod` one?
+## Enabling a specific Spring profile
 
-You should enable those profiles at build time since it involves changing the beans of the application context.
+Spring profiles are supported by native images, but you need to enable them at build time when AOT runs.
+AOT pre-processes your application and evaluates auto-configurations, changing the profile at runtime is therefore ignored.
 
-With Gradle, it is possible to do that with for example:
+You can use any Gradle feature to customize the `processAot` task.
+For instance, the following example uses a `aotProfile` property with a fallback on the `default` profile if it is not set.
+
+```kotlin
+tasks.withType<ProcessAot> {
+    args("--spring.profiles.active=" + (project.properties["aotProfiles"] ?: "default"))
+}
 ```
-./gradlew processAot --args='--spring.profiles.active=prod' nativeCompile
+
+You can then specify the profile(s) your native application needs as part of the regular build command:
+
+```
+./gradlew nativeCompile -PaotProfiles=prod
 ```
 
-With Maven, you can for example define a Maven profile that will enable the Spring Boot one with:
+Maven users can augment the existing `native` profile of the Spring Boot parent by exposing a similar property, as shown in the following example:
+
 ```xml
-<profiles>
-	<profile>
-		<id>prod</id>
-		<build>
-			<pluginManagement>
-				<plugins>
-					<plugin>
-						<groupId>org.springframework.boot</groupId>
-						<artifactId>spring-boot-maven-plugin</artifactId>
-						<configuration>
-							<profiles>
-								<profile>prod</profile>
-							</profiles>
-						</configuration>
-					</plugin>
-				</plugins>
-			</pluginManagement>
-		</build>
-	</profile>
-</profiles>
-```
-And when building the native executable or the container image, specify the profile with for example:
-```
-mvn -Pprod,native native:compile
+<profile>
+    <id>native</id>
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>process-aot</id>
+                            <configuration>
+                                <profiles>${aot.profiles}</profiles>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</profile>
 ```
 
-When you compile your native executable like that, you get
+With a default value set in the `properties` section of the build:
+
+```xml
+<properties>
+    <aot.profiles>default</aot.profiles>
+</properties>
+```
+
+Once this is in place, the profile(s) the application needs can also be specified on the command-line:
+
+```
+mvn -Pnative native:compile -Daot.profiles=prod
+```
+
+If you compile this sample application this way, you get
 ```
 Hello from prod
 Default message from application.properties
